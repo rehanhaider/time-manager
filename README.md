@@ -1,7 +1,6 @@
 # Timer CLI
 
-A powerful and visually stunning terminal-based timer application built with [Textual](https://textual.textualize.io/) and [Typer](https://typer.tiangolo.com/) which has:
-
+A powerful and visually stunning terminal-based timer application built with [Textual](https://textual.textualize.io/) and [Typer](https://typer.tiangolo.com/).
 
 - **TUI Interface**: Beautiful, responsive terminal user interface with a premium feel.
 - **Notifications**: Visual and audio feedback (bell) when a countdown completes.
@@ -10,7 +9,6 @@ A powerful and visually stunning terminal-based timer application built with [Te
 
 - **Stopwatch**: Precise stopwatch with centisecond resolution.
 - **Countdown**: Configurable countdown timer with support for seconds, minutes, and hours.
-
 
 ## Installation
 
@@ -26,7 +24,7 @@ To install `timer` as a system-wide utility:
 make global
 ```
 
-This will make the `timer` command available from anywhere in your terminal.
+This builds a standalone executable and copies it to `/usr/local/bin/timer`, making it available from anywhere.
 
 ### Local Development
 
@@ -56,7 +54,7 @@ timer sw
 Start a countdown for a specific duration:
 
 ```bash
-timer cd 5 m    # 5 minutes (default)
+timer cd 5 m    # 5 minutes
 timer cd 60 s   # 60 seconds
 timer cd 1 h    # 1 hour
 ```
@@ -65,13 +63,36 @@ timer cd 1 h    # 1 hour
 - `Space`: Pause/Resume
 - `q`: Quit
 
-## Project Structure
+## Development
 
-- `src/app.py`: CLI entry point using Typer.
-- `src/tui/tui.py`: Core TUI logic and screens using Textual.
-- `src/tui/__init__.py`: Package exports for clean imports.
-- `pyproject.toml`: Project configuration and dependencies.
-- `Makefile`: Convenient commands for installation and management.
+### Make Commands
+
+| Command                | Description                                       |
+| ---------------------- | ------------------------------------------------- |
+| `make local`           | Install in editable mode for development          |
+| `make global`          | Build and install system-wide to `/usr/local/bin` |
+| `make build`           | Build standalone executable (with version bump)   |
+| `make bump`            | Bump patch version (default)                      |
+| `TYPE=MINOR make bump` | Bump minor version                                |
+| `TYPE=MAJOR make bump` | Bump major version                                |
+| `make clean`           | Remove build artifacts                            |
+| `make uninstall`       | Remove global installation                        |
+
+### Project Structure
+
+```
+timer/
+├── src/
+│   ├── app.py              # CLI entry point using Typer
+│   └── tui/
+│       ├── __init__.py     # Package exports
+│       ├── stopwatch.py    # Stopwatch TUI
+│       └── countdown.py    # Countdown TUI
+├── scripts/
+│   └── bump.sh             # Version bump script
+├── pyproject.toml          # Project configuration
+└── Makefile                # Build and install commands
+```
 
 ## Uninstallation
 

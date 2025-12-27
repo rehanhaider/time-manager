@@ -1,5 +1,6 @@
 from textual.app import App, ComposeResult
-from textual.widgets import Container, Digits, Footer, Header, Static
+from textual.containers import Container
+from textual.widgets import Digits, Footer, Header, Static
 from textual.reactive import reactive
 
 
