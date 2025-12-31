@@ -9,7 +9,7 @@ from core.termclock import Stopwatch
 class StopwatchTui(App):
     """A simple stopwatch app."""
 
-    TITLE = "Termclock"
+    TITLE = "Time Manager"
     SUB_TITLE = "Stopwatch"
 
     CSS_PATH = "theme.tcss"

@@ -9,7 +9,7 @@ from core.termclock import Countdown
 class CountdownTui(App):
     """A countdown timer app."""
 
-    TITLE = "Termclock"
+    TITLE = "Time Manager"
     SUB_TITLE = "Countdown"
 
     CSS_PATH = "theme.tcss"

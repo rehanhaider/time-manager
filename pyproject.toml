@@ -1,6 +1,6 @@
 [project]
-name = "chronox"
-version = "0.2.7"
+name = "time-manager"
+version = "0.2.14"
 description = "A terminal based stopwatch and countdown timer"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -11,8 +11,8 @@ dependencies = [
 ]
 
 [project.scripts]
-clk = "app:main"
-chronox = "app:main"
+tm = "app:main"
+time-manager = "app:main"
 
 [build-system]
 requires = ["hatchling"]

@@ -654,31 +654,6 @@ wheels = [
 ]
 
 [[package]]
-name = "termclock"
-version = "0.2.7"
-source = { editable = "." }
-dependencies = [
-    { name = "textual" },
-    { name = "textual-dev" },
-    { name = "typer" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "pyinstaller" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "textual", specifier = ">=6.11.0" },
-    { name = "textual-dev", specifier = ">=1.8.0" },
-    { name = "typer", specifier = ">=0.21.0" },
-]
-
-[package.metadata.requires-dev]
-dev = [{ name = "pyinstaller", specifier = ">=6.17.0" }]
-
-[[package]]
 name = "textual"
 version = "6.11.0"
 source = { registry = "https://pypi.org/simple" }
@@ -727,6 +702,31 @@ sdist = { url = "https://files.pythonhosted.org/packages/c2/7e/62fecc552853ec6a1
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b5/fe/108e7773349d500cf363328c3d0b7123e03feda51e310a3a5b136ac8ca71/textual_serve-1.1.3-py3-none-any.whl", hash = "sha256:207a472bc6604e725b1adab4ab8bf12f4c4dc25b04eea31e4d04731d8bf30f18", size = 447339, upload-time = "2025-11-01T16:22:35.209Z" },
 ]
+
+[[package]]
+name = "time-manager"
+version = "0.2.14"
+source = { editable = "." }
+dependencies = [
+    { name = "textual" },
+    { name = "textual-dev" },
+    { name = "typer" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pyinstaller" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "textual", specifier = ">=6.11.0" },
+    { name = "textual-dev", specifier = ">=1.8.0" },
+    { name = "typer", specifier = ">=0.21.0" },
+]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pyinstaller", specifier = ">=6.17.0" }]
 
 [[package]]
 name = "typer"

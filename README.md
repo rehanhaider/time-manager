@@ -1,4 +1,4 @@
-# Chronox
+# time-manager
 
 A powerful and visually stunning terminal-based timer application built with [Textual](https://textual.textualize.io/) and [Typer](https://typer.tiangolo.com/).
 
@@ -16,35 +16,35 @@ A powerful and visually stunning terminal-based timer application built with [Te
 ## Installation
 
 - Requires **Python 3.13+**
-- Installs two commands: `clk` (recommended) and `chronox`
+- Installs two commands: `tm` (recommended) and `time-manager`
 
 From PyPI:
 
 ```bash
-pip install chronox
+pip install time-manager
 ```
 
 If you use uv:
 
 ```bash
-uv tool install chronox
+uv tool install time-manager
 
 # or (inside a project)
-uv add chronox
+uv add time-manager
 ```
 
 ## Usage
 
-Chronox provides two command names for convenience:
+time-manager provides two command names for convenience:
 
-- `clk` - Short and convenient alias
-- `chronox` - Full command name
+- `tm` - Short and convenient alias
+- `time-manager` - Full command name
 
 Both commands work identically. Examples:
 
 ```bash
-clk sw         # or: chronox sw
-clk cd 5 m     # or: chronox cd 5 m
+tm sw         # or: time-manager sw
+tm cd 5 m     # or: time-manager cd 5 m
 ```
 
 ### Stopwatch
@@ -52,13 +52,13 @@ clk cd 5 m     # or: chronox cd 5 m
 Start a stopwatch to track elapsed time:
 
 ```bash
-clk sw
+tm sw
 ```
 
 For CLI mode (no Textual UI):
 
 ```bash
-clk sw --cli
+tm sw --cli
 ```
 
 **Controls (TUI mode):**
@@ -71,15 +71,15 @@ clk sw --cli
 Start a countdown for a specific duration:
 
 ```bash
-clk cd 5 m    # 5 minutes
-clk cd 60 s   # 60 seconds
-clk cd 1 h    # 1 hour
+tm cd 5 m    # 5 minutes
+tm cd 60 s   # 60 seconds
+tm cd 1 h    # 1 hour
 ```
 
 For CLI mode (no Textual UI):
 
 ```bash
-clk cd 5 m --cli
+tm cd 5 m --cli
 ```
 
 **Controls (TUI mode):**
@@ -109,7 +109,7 @@ To install as a system-wide utility:
 make global
 ```
 
-This builds a standalone executable and copies it to `/usr/local/bin/termclock`, and also creates a `/usr/local/bin/clk` symlink.
+This builds a standalone executable and copies it to `/usr/local/bin/time-manager`, and also creates a `/usr/local/bin/tm` symlink.
 
 ### Make Commands
 
@@ -127,7 +127,7 @@ This builds a standalone executable and copies it to `/usr/local/bin/termclock`,
 ### Project Structure
 
 ```
-chronox/
+time-manager/
 ├── src/
 │   ├── app.py              # CLI entry point using Typer
 │   ├── cli/
@@ -144,7 +144,6 @@ chronox/
 ├── scripts/
 │   └── bump.sh             # Version bump script
 ├── pyproject.toml          # Project configuration
-├── termclock.spec          # PyInstaller specification
 ├── uv.lock                 # Dependency lock file
 ├── Makefile                # Build and install commands
 ├── LICENSE                 # Project license
@@ -153,24 +152,24 @@ chronox/
 
 ### Publishing to PyPI
 
-#### Test PyPI
+This repo uses `make publish` (via `scripts/publish.sh`) and defaults to **TestPyPI**.
 
-To publish to Test PyPI:
+#### Test PyPI (default)
+
+To publish to Test PyPI (uses `TEST_PYPI_PUBLISH_TOKEN`):
 
 ```bash
 make build
-uv build
-uv publish --index testpypi
+make publish
 ```
 
 #### Production PyPI
 
-To publish to production PyPI:
+To publish to production PyPI (uses `PYPI_PUBLISH_TOKEN`):
 
 ```bash
 make build
-uv build
-uv publish
+PROD=TRUE make publish
 ```
 
 ### Uninstallation

@@ -1,10 +1,10 @@
-"""Termclock entry point.
+"""time-manager entry point.
 
 Commands:
-- `termclock sw`                 Start a stopwatch
-- `clk sw`                        Start a stopwatch
-- `termclock cd <amount> [unit]` Start a countdown timer
-- `clk cd <amount> [unit]`       Start a countdown timer
+- `time-manager sw`                 Start a stopwatch
+- `tm sw`                           Start a stopwatch
+- `time-manager cd <amount> [unit]` Start a countdown timer
+- `tm cd <amount> [unit]`           Start a countdown timer
 """
 
 from __future__ import annotations
@@ -93,9 +93,9 @@ def cd(
     Start a countdown timer.
 
     Example:
-    timer cd 5 m
-    timer cd 60 s
-    timer cd 1 h
+    time-manager cd 5 m
+    time-manager cd 60 s
+    time-manager cd 1 h
     """
 
     seconds = _parse_countdown_seconds(amount, unit)
