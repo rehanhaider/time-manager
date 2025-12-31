@@ -7,6 +7,14 @@ Commands:
 
 from __future__ import annotations
 
+import os
+
+# Terminal emulators differ in how they advertise TrueColor support.
+# These defaults help keep Textual/Rich rendering consistent across Windows Terminal,
+# VS Code/Cursor terminals, etc. Users can still override by setting these env vars.
+os.environ.setdefault("COLORTERM", "truecolor")
+os.environ.setdefault("RICH_COLOR_SYSTEM", "truecolor")
+
 import typer
 
 from cli import run_countdown_cli, run_stopwatch_cli

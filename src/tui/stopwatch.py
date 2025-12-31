@@ -1,63 +1,19 @@
 from textual.app import App, ComposeResult
 from textual.containers import Container
-from textual.widgets import Header, Footer, Digits, Button
+from textual.widgets import Header, Footer, Digits, Button, Static
 from textual.reactive import reactive
 from core.formatting import format_time
 from core.timer import Stopwatch
+from tui.theme import TIMER_CSS, MUTED, SECONDARY
 
 
 class StopwatchTui(App):
     """A simple stopwatch app."""
 
-    CSS = """
-    StopwatchTui {
-        align: center middle;
-        background: $surface;
-    }
-    
-    #display-container {
-        height: auto;
-        width: auto;
-        border: heavy $primary;
-        padding: 1 2;
-        background: $surface-lighten-1;
-    }
+    TITLE = "Timer"
+    SUB_TITLE = "Stopwatch"
 
-    Digits {
-        text-align: center;
-        width: auto;
-        color: $text;
-        text-style: bold;
-    }
-    
-    #buttons {
-        layout: horizontal;
-        align: center middle;
-        margin-top: 2;
-        height: auto;
-        width: auto;
-    }
-    
-    Button {
-        margin: 0 1;
-        min-width: 16;
-    }
-    
-    Button.start {
-        background: $success;
-        color: $text;
-    }
-    
-    Button.stop {
-        background: $error;
-        color: $text;
-    }
-    
-    Button.reset {
-        background: $warning;
-        color: $text;
-    }
-    """
+    CSS = TIMER_CSS
 
     BINDINGS = [
         ("q", "quit", "Quit"),
@@ -73,18 +29,20 @@ class StopwatchTui(App):
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
-        with Container(id="display-container"):
-            yield Digits("00:00.00", id="time-display")
-        with Container(id="buttons"):
-            yield Button("Start", id="start", variant="success", classes="start")
-            yield Button(
-                "Stop", id="stop", variant="error", classes="stop", disabled=True
-            )
-            yield Button("Reset", id="reset", variant="warning", classes="reset")
+        with Container(id="content"):
+            with Container(id="display-container"):
+                yield Digits("00:00.00", id="time-display")
+                yield Static("Ready", id="status")
+            with Container(id="buttons"):
+                # Don't use `variant=` here; we want fully deterministic styling via TCSS.
+                yield Button("START", id="start", classes="start")
+                yield Button("STOP", id="stop", classes="stop", disabled=True)
+                yield Button("RESET", id="reset", classes="reset")
         yield Footer()
 
     def on_mount(self) -> None:
         self.set_interval(1 / 60, self.update_time)
+        self.update_buttons()
 
     def update_time(self) -> None:
         self.time_elapsed = self.stopwatch.elapsed
@@ -114,9 +72,17 @@ class StopwatchTui(App):
         self.update_buttons()
 
     def update_buttons(self) -> None:
-        if self.stopwatch.is_running:
+        running = self.stopwatch.is_running
+        if running:
             self.query_one("#start").disabled = True
             self.query_one("#stop").disabled = False
         else:
             self.query_one("#start").disabled = False
             self.query_one("#stop").disabled = True
+
+        status = (
+            "Running" if running else ("Ready" if self.time_elapsed == 0 else "Paused")
+        )
+        status_widget = self.query_one("#status", Static)
+        status_widget.update(status)
+        status_widget.styles.color = SECONDARY if running else MUTED
