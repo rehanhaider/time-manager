@@ -13,7 +13,7 @@ bump:
 
 build: bump
 	@echo "Building standalone executable..."
-	@uv run pyinstaller --onefile --name timer src/app.py --collect-all textual --hidden-import=tui --hidden-import=tui.tui --hidden-import=tui.stopwatch --hidden-import=tui.countdown
+	@uv run pyinstaller --onefile --name timer src/app.py --collect-all textual --hidden-import=tui --hidden-import=tui.stopwatch --hidden-import=tui.countdown
 	@echo "Done. Executable is at dist/timer"
 
 clean:

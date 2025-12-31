@@ -7,6 +7,7 @@ from rich.live import Live
 from rich.panel import Panel
 from rich.text import Text
 from rich import box
+from core.formatting import format_time
 from core.timer import Stopwatch, Countdown
 
 
@@ -27,23 +28,6 @@ class NonBlockingInput:
         if select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], []):
             return sys.stdin.read(1)
         return None
-
-
-def format_time(seconds: float, show_centiseconds: bool = True) -> str:
-    minutes, secs = divmod(seconds, 60)
-    hours, minutes = divmod(minutes, 60)
-
-    if show_centiseconds:
-        centiseconds = int((seconds * 100) % 100)
-        if hours > 0:
-            return f"{int(hours):02}:{int(minutes):02}:{int(secs):02}.{centiseconds:02}"
-        else:
-            return f"{int(minutes):02}:{int(secs):02}.{centiseconds:02}"
-    else:
-        if hours > 0:
-            return f"{int(hours):02}:{int(minutes):02}:{int(secs):02}"
-        else:
-            return f"{int(minutes):02}:{int(secs):02}"
 
 
 def run_stopwatch_cli():
@@ -144,27 +128,3 @@ def run_countdown_cli(seconds: int):
 
     except KeyboardInterrupt:
         pass
-
-    # Print final state on exit if not finished (finished state handles itself)
-    if not countdown.is_finished:
-        remaining = countdown.time_left
-        time_str = format_time(remaining, show_centiseconds=False)
-
-        # Change color based on urgency
-        color = "blue"
-        if remaining < 10:
-            color = "red"
-        elif remaining < 30:
-            color = "yellow"
-
-        panel = Panel(
-            Text(time_str, style=f"bold {color}", justify="center"),
-            title="Countdown (Stopped)",
-            subtitle=subtitle,
-            box=box.ROUNDED,
-            border_style=color,
-            padding=(1, 2),
-        )
-        from rich.console import Console
-
-        Console().print(panel)

@@ -2,6 +2,7 @@ from textual.app import App, ComposeResult
 from textual.containers import Container
 from textual.widgets import Digits, Footer, Header, Static
 from textual.reactive import reactive
+from core.formatting import format_time
 from core.timer import Countdown
 
 
@@ -42,9 +43,10 @@ class CountdownTui(App):
 
     time_left = reactive(0.0)
 
-    def __init__(self, seconds: int):
+    def __init__(self, seconds: int) -> None:
         super().__init__()
         self.countdown = Countdown(seconds)
+        self._finished_announced = False
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
@@ -54,6 +56,7 @@ class CountdownTui(App):
         yield Footer()
 
     def on_mount(self) -> None:
+        self.time_left = self.countdown.time_left
         self.update_display()
         self.set_interval(0.1, self.tick)
 
@@ -61,7 +64,8 @@ class CountdownTui(App):
         self.countdown.tick()
         self.time_left = self.countdown.time_left
 
-        if self.countdown.is_finished:
+        if self.countdown.is_finished and not self._finished_announced:
+            self._finished_announced = True
             self.notify("Time's up!", severity="error", timeout=10)
             self.bell()
             self.query_one("#status", Static).update("Time's Up!")
@@ -70,15 +74,7 @@ class CountdownTui(App):
         self.update_display()
 
     def update_display(self) -> None:
-        minutes, seconds = divmod(self.time_left, 60)
-        hours, minutes = divmod(minutes, 60)
-
-        # Display as integer seconds to match previous behavior mostly, but core is float
-        # Using int casting for display
-        if hours > 0:
-            time_str = f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}"
-        else:
-            time_str = f"{int(minutes):02}:{int(seconds):02}"
+        time_str = format_time(self.time_left, show_centiseconds=False)
         self.query_one("#countdown", Digits).update(time_str)
 
     def action_toggle_pause(self) -> None:

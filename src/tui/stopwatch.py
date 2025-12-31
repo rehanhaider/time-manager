@@ -2,6 +2,7 @@ from textual.app import App, ComposeResult
 from textual.containers import Container
 from textual.widgets import Header, Footer, Digits, Button
 from textual.reactive import reactive
+from core.formatting import format_time
 from core.timer import Stopwatch
 
 
@@ -66,7 +67,7 @@ class StopwatchTui(App):
 
     time_elapsed = reactive(0.0)
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.stopwatch = Stopwatch()
 
@@ -76,7 +77,9 @@ class StopwatchTui(App):
             yield Digits("00:00.00", id="time-display")
         with Container(id="buttons"):
             yield Button("Start", id="start", variant="success", classes="start")
-            yield Button("Stop", id="stop", variant="error", classes="stop", disabled=True)
+            yield Button(
+                "Stop", id="stop", variant="error", classes="stop", disabled=True
+            )
             yield Button("Reset", id="reset", variant="warning", classes="reset")
         yield Footer()
 
@@ -85,16 +88,7 @@ class StopwatchTui(App):
 
     def update_time(self) -> None:
         self.time_elapsed = self.stopwatch.elapsed
-
-        minutes, seconds = divmod(self.time_elapsed, 60)
-        hours, minutes = divmod(minutes, 60)
-        centiseconds = int((self.time_elapsed * 100) % 100)
-
-        if hours > 0:
-            time_str = f"{int(hours):02}:{int(minutes):02}:{int(seconds):02}.{centiseconds:02}"
-        else:
-            time_str = f"{int(minutes):02}:{int(seconds):02}.{centiseconds:02}"
-
+        time_str = format_time(self.time_elapsed, show_centiseconds=True)
         self.query_one("#time-display", Digits).update(time_str)
 
     def action_toggle_timer(self) -> None:
@@ -119,7 +113,7 @@ class StopwatchTui(App):
 
         self.update_buttons()
 
-    def update_buttons(self):
+    def update_buttons(self) -> None:
         if self.stopwatch.is_running:
             self.query_one("#start").disabled = True
             self.query_one("#stop").disabled = False
