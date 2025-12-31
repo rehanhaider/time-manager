@@ -44,7 +44,13 @@ Start a stopwatch to track elapsed time:
 timer sw
 ```
 
-**Controls:**
+For CLI mode (non-interactive):
+
+```bash
+timer sw --cli
+```
+
+**Controls (TUI mode):**
 - `Space`: Start/Stop
 - `r`: Reset
 - `q`: Quit
@@ -59,7 +65,13 @@ timer cd 60 s   # 60 seconds
 timer cd 1 h    # 1 hour
 ```
 
-**Controls:**
+For CLI mode (non-interactive):
+
+```bash
+timer cd 5 m --cli
+```
+
+**Controls (TUI mode):**
 - `Space`: Pause/Resume
 - `q`: Quit
 
@@ -84,14 +96,25 @@ timer cd 1 h    # 1 hour
 timer/
 ├── src/
 │   ├── app.py              # CLI entry point using Typer
+│   ├── cli/
+│   │   ├── __init__.py     # CLI package exports
+│   │   └── cli.py          # CLI implementations for timers
+│   ├── core/
+│   │   ├── formatting.py   # Time formatting utilities
+│   │   └── timer.py        # Core timer logic
 │   └── tui/
-│       ├── __init__.py     # Package exports
+│       ├── __init__.py     # TUI package exports
+│       ├── countdown.py    # Countdown TUI
 │       ├── stopwatch.py    # Stopwatch TUI
-│       └── countdown.py    # Countdown TUI
+│       └── theme.tcss      # Textual CSS theme
 ├── scripts/
 │   └── bump.sh             # Version bump script
 ├── pyproject.toml          # Project configuration
-└── Makefile                # Build and install commands
+├── timer.spec              # PyInstaller specification
+├── uv.lock                 # Dependency lock file
+├── Makefile                # Build and install commands
+├── LICENSE                 # Project license
+└── README.md               # This file
 ```
 
 ## Uninstallation
