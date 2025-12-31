@@ -38,9 +38,11 @@ class StopwatchTui(App):
             with Container(id="buttons-row"):
                 with Container(id="buttons"):
                     # Don't use `variant=` here; we want fully deterministic styling via TCSS.
-                    yield Button("START", id="start", classes="start")
-                    yield Button("STOP", id="stop", classes="stop", disabled=True)
-                    yield Button("RESET", id="reset", classes="reset")
+                    yield Button("START", id="start", classes="start", flat=True)
+                    yield Button(
+                        "STOP", id="stop", classes="stop", disabled=True, flat=True
+                    )
+                    yield Button("RESET", id="reset", classes="reset", flat=True)
         yield Footer()
 
     def on_mount(self) -> None:
