@@ -19,6 +19,8 @@ import os
 os.environ.setdefault("COLORTERM", "truecolor")
 os.environ.setdefault("RICH_COLOR_SYSTEM", "truecolor")
 
+from importlib import metadata as _metadata
+
 import typer
 
 from cli import run_countdown_cli, run_stopwatch_cli
@@ -66,6 +68,23 @@ INTERACTIVE = typer.Option(
     "-i",
     help="Run in interactive (Textual TUI) mode.",
 )
+
+
+def _get_version() -> str:
+    for dist_name in ("time-manager", "tm"):
+        try:
+            return _metadata.version(dist_name)
+        except _metadata.PackageNotFoundError:
+            continue
+    return "unknown"
+
+
+def _version_callback(value: bool) -> None:
+    if not value:
+        return
+    typer.echo(_get_version())
+    raise typer.Exit()
+
 
 _UNIT_SECONDS: dict[str, int] = {
     # seconds
@@ -133,7 +152,18 @@ def _print_error_box(message: str) -> None:
 
 
 @app.callback(invoke_without_command=True)
-def _root(ctx: typer.Context, interactive: bool = INTERACTIVE) -> None:
+def _root(
+    ctx: typer.Context,
+    interactive: bool = INTERACTIVE,
+    version: bool = typer.Option(
+        False,
+        "--version",
+        "-V",
+        help="Show the version and exit.",
+        callback=_version_callback,
+        is_eager=True,
+    ),
+) -> None:
     """
     A terminal based stopwatch and countdown timer.
     """
