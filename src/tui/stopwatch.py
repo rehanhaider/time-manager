@@ -30,15 +30,20 @@ class StopwatchTui(App):
 
     time_elapsed = reactive(0.0)
 
-    def __init__(self) -> None:
+    def __init__(self, project_name: str | None = None) -> None:
         super().__init__()
         self.stopwatch = Stopwatch()
+        self.project_name = (project_name or "").strip() or "Untitled"
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
         with Container(id="content"):
             with Container(id="card-row"):
                 with Container(id="display-container"):
+                    with Container(id="project-row"):
+                        yield Static(
+                            f"Project: {self.project_name}", id="project-label"
+                        )
                     with Container(id="time-row"):
                         yield Digits("00:00:00", id="time-display")
                     with Container(id="hint-row"):
@@ -65,13 +70,14 @@ class StopwatchTui(App):
         self.query_one("#time-display", Digits).update(time_str)
 
     def action_toggle_timer(self) -> None:
-        self.stopwatch.toggle()
+        if self.stopwatch.is_running:
+            self.stopwatch.stop()
+        else:
+            self.stopwatch.start()
         self.update_buttons()
 
     def action_reset_timer(self) -> None:
-        self.stopwatch.reset()
-        self.time_elapsed = 0.0
-        self.query_one("#time-display", Digits).update("00:00:00")
+        self._reset_stopwatch()
         self.update_buttons()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
@@ -80,9 +86,7 @@ class StopwatchTui(App):
         elif event.button.id == "stop":
             self.stopwatch.stop()
         elif event.button.id == "reset":
-            self.stopwatch.reset()
-            self.time_elapsed = 0.0
-            self.query_one("#time-display", Digits).update("00:00:00")
+            self._reset_stopwatch()
 
         self.update_buttons()
 
@@ -103,3 +107,8 @@ class StopwatchTui(App):
         status_widget.set_class(running, "running")
         status_widget.set_class((not running) and self.time_elapsed == 0, "ready")
         status_widget.set_class((not running) and self.time_elapsed > 0, "paused")
+
+    def _reset_stopwatch(self) -> None:
+        self.stopwatch.reset()
+        self.time_elapsed = 0.0
+        self.query_one("#time-display", Digits).update("00:00:00")

@@ -1,6 +1,16 @@
 from time import monotonic
 from dataclasses import dataclass, field
 from typing import Optional
+from datetime import datetime
+
+
+@dataclass
+class StopwatchRun:
+    """Represents a single stopwatch run."""
+
+    start_time: datetime
+    end_time: datetime | None = None
+    duration: float = 0.0
 
 
 @dataclass
@@ -10,6 +20,8 @@ class Stopwatch:
     _start_time: Optional[float] = None
     _accumulated_time: float = 0.0
     _running: bool = False
+    _runs: list[StopwatchRun] = field(default_factory=list)
+    _current_run_start: datetime | None = None
 
     @property
     def is_running(self) -> bool:
@@ -22,21 +34,44 @@ class Stopwatch:
             return self._accumulated_time + (monotonic() - self._start_time)
         return self._accumulated_time
 
+    @property
+    def runs(self) -> list[StopwatchRun]:
+        """Return all completed and current runs."""
+        return self._runs
+
     def start(self):
         if not self._running:
             self._start_time = monotonic()
             self._running = True
+            self._current_run_start = datetime.now()
 
     def stop(self):
         if self._running:
-            self._accumulated_time += monotonic() - self._start_time
+            elapsed_in_run = monotonic() - self._start_time
+            self._accumulated_time += elapsed_in_run
             self._start_time = None
             self._running = False
 
+            # Record the completed run
+            if self._current_run_start:
+                self._runs.append(
+                    StopwatchRun(
+                        start_time=self._current_run_start,
+                        end_time=datetime.now(),
+                        duration=elapsed_in_run,
+                    )
+                )
+                self._current_run_start = None
+
     def reset(self):
+        # If currently running, stop and record the run first
+        if self._running:
+            self.stop()
+
         self._running = False
         self._accumulated_time = 0.0
         self._start_time = None
+        self._current_run_start = None
 
     def toggle(self):
         if self._running:

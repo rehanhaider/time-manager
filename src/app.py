@@ -23,7 +23,7 @@ from importlib import metadata as _metadata
 
 import typer
 
-from cli import run_countdown_cli, run_stopwatch_cli
+from cli import run_countdown_cli, run_stopwatch_cli, print_stopwatch_summary
 from tui import CountdownTui, StopwatchTui
 
 _ALIASES: dict[str, str] = {
@@ -182,7 +182,16 @@ def _root(
 
 
 @app.command(help="Start a stopwatch. (alias: stopwatch)")
-def sw(ctx: typer.Context, interactive: bool = INTERACTIVE) -> None:
+def sw(
+    ctx: typer.Context,
+    interactive: bool = INTERACTIVE,
+    name: str = typer.Option(
+        "Untitled",
+        "--name",
+        "-n",
+        help="Project name to include in the summary.",
+    ),
+) -> None:
     """
     Start a stopwatch.
 
@@ -195,9 +204,19 @@ def sw(ctx: typer.Context, interactive: bool = INTERACTIVE) -> None:
         interactive or (ctx.obj or {}).get("interactive", False)
     )
     if effective_interactive:
-        StopwatchTui().run()
+        stopwatch_tui = StopwatchTui(project_name=name)
+        try:
+            stopwatch_tui.run()
+        finally:
+            if stopwatch_tui.stopwatch.is_running:
+                stopwatch_tui.stopwatch.stop()
+            print_stopwatch_summary(
+                name,
+                stopwatch_tui.stopwatch.elapsed,
+                stopwatch_tui.stopwatch.runs,
+            )
     else:
-        run_stopwatch_cli()
+        run_stopwatch_cli(name)
 
 
 @app.command(help="Start a countdown timer. (alias: countdown)")

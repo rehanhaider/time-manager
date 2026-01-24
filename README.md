@@ -53,12 +53,14 @@ Start a stopwatch to track elapsed time:
 
 ```bash
 tm sw
+tm sw -n "Project Alpha"
 ```
 
 For interactive TUI mode:
 
 ```bash
 tm sw -i
+tm sw -i -n "Project Alpha"
 ```
 
 **Controls (TUI mode):**

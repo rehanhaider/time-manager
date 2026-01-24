@@ -80,6 +80,7 @@ FooterLabel {
 }
 
 /* Center the time + status using horizontal rows (more reliable for multi-line Digits) */
+#project-row,
 #time-row,
 #hint-row,
 #status-row {
@@ -140,6 +141,19 @@ Digits.danger {
 #status.danger {
     color: #8b3a3a;
     text-opacity: 100%;
+}
+
+/* Stopwatch project label */
+#project-row {
+    margin-bottom: 1;
+}
+
+#project-label {
+    width: auto;
+    text-style: bold;
+    text-opacity: 80%;
+    color: #d5b77c;
+    content-align: center middle;
 }
 
 /* Stopwatch time format hint */

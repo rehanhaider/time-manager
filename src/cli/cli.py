@@ -9,7 +9,7 @@ from rich.live import Live
 from rich.panel import Panel
 from rich.text import Text
 from rich import box
-from core.formatting import format_time
+from core.formatting import format_time, format_stopwatch_timeline
 from core.termclock import Stopwatch, Countdown
 
 
@@ -32,7 +32,8 @@ class NonBlockingInput:
         return None
 
 
-def run_stopwatch_cli():
+def run_stopwatch_cli(project_name: str | None = None):
+    project_name = (project_name or "").strip() or "Untitled"
     stopwatch = Stopwatch()
     stopwatch.start()
 
@@ -47,7 +48,10 @@ def run_stopwatch_cli():
                     if char.lower() == "q":
                         break
                     elif char == " ":
-                        stopwatch.toggle()
+                        if stopwatch.is_running:
+                            stopwatch.stop()
+                        else:
+                            stopwatch.start()
                     elif char.lower() == "r":
                         stopwatch.reset()
 
@@ -79,6 +83,71 @@ def run_stopwatch_cli():
                 time.sleep(1 / 60)
     except KeyboardInterrupt:
         pass
+    finally:
+        if stopwatch.is_running:
+            stopwatch.stop()
+        print_stopwatch_summary(project_name, stopwatch.elapsed, stopwatch.runs)
+
+
+def print_stopwatch_summary(
+    project_name: str,
+    total_elapsed: float,
+    runs: list,
+) -> None:
+    try:
+        from rich.console import Console
+        from rich.panel import Panel
+    except Exception:
+        # Fallback to plain text
+        print()
+        print(f"Project: {project_name}")
+        print(f"Total: {format_time(total_elapsed, show_centiseconds=False)}")
+        print()
+        print(format_stopwatch_timeline(project_name, total_elapsed, runs))
+        return
+
+    if not runs:
+        print()
+        Console().print("[dim]No runs recorded.[/dim]")
+        return
+
+    # Format total elapsed time
+    elapsed_text = format_time(total_elapsed, show_centiseconds=False)
+    if elapsed_text.count(":") == 1:
+        elapsed_text = f"00:{elapsed_text}"
+
+    # Build timeline content with breaks
+    timeline_lines = []
+    for i, run in enumerate(runs, 1):
+        start_str = run.start_time.strftime("%H:%M")
+        end_str = run.end_time.strftime("%H:%M") if run.end_time else "..."
+        duration_str = f"({int(run.duration)}s)"
+
+        # Create timeline bar
+        bar = "▬" * 15
+        line = (
+            f"  Session #{i} {start_str} [green]{bar}[/green] {end_str}  "
+            f"[dim]{duration_str}[/dim]"
+        )
+        timeline_lines.append(line)
+
+        # Add blank line between runs to show breaks
+        if i < len(runs):
+            timeline_lines.append("")
+
+    timeline_content = "\n".join(timeline_lines)
+
+    # Create panel with project name and total time in title
+    panel = Panel(
+        timeline_content,
+        title=f"{project_name}: {elapsed_text}",
+        border_style="green",
+        box=box.ROUNDED,
+        padding=(0, 1),
+    )
+
+    print()
+    Console().print(panel)
 
 
 def run_countdown_cli(seconds: int):
