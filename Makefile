@@ -1,3 +1,6 @@
+run:
+	@uv run tm sw
+
 local:
 	@echo "Installing time-manager (local dev)..."
 	@uv pip install -e .

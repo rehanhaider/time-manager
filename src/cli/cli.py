@@ -3,13 +3,18 @@ import sys
 import select
 import termios
 import tty
+from datetime import datetime
 from rich.align import Align
 from rich.console import Group
 from rich.live import Live
 from rich.panel import Panel
 from rich.text import Text
 from rich import box
-from core.formatting import format_time, format_stopwatch_timeline
+from core.formatting import (
+    format_time,
+    format_stopwatch_timeline,
+    format_duration_words,
+)
 from core.termclock import Stopwatch, Countdown
 
 
@@ -112,21 +117,28 @@ def print_stopwatch_summary(
         return
 
     # Format total elapsed time
-    elapsed_text = format_time(total_elapsed, show_centiseconds=False)
-    if elapsed_text.count(":") == 1:
-        elapsed_text = f"00:{elapsed_text}"
+    elapsed_text = format_duration_words(total_elapsed)
+
+    local_now = datetime.now().astimezone()
+    local_tz = local_now.tzinfo
+    tz_name = local_now.tzname() or "Local"
+
+    def _to_local(dt: datetime) -> datetime:
+        if dt.tzinfo is None:
+            return dt.replace(tzinfo=local_tz)
+        return dt.astimezone(local_tz)
 
     # Build timeline content with breaks
     timeline_lines = []
     for i, run in enumerate(runs, 1):
-        start_str = run.start_time.strftime("%H:%M")
-        end_str = run.end_time.strftime("%H:%M") if run.end_time else "..."
-        duration_str = f"({int(run.duration)}s)"
+        start_str = _to_local(run.start_time).strftime("%H:%M")
+        end_str = _to_local(run.end_time).strftime("%H:%M") if run.end_time else "..."
+        duration_str = f"({format_duration_words(run.duration)})"
 
         # Create timeline bar
         bar = "▬" * 15
         line = (
-            f"  Session #{i}\t{start_str} [green]{bar}[/green] {end_str}  "
+            f"  Session #{i}\t{start_str} [green]{bar}[/green] {end_str} {tz_name}  "
             f"[dim]{duration_str}[/dim]"
         )
         timeline_lines.append(line)

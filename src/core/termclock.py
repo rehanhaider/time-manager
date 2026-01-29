@@ -43,7 +43,7 @@ class Stopwatch:
         if not self._running:
             self._start_time = monotonic()
             self._running = True
-            self._current_run_start = datetime.now()
+            self._current_run_start = datetime.now().astimezone()
 
     def stop(self):
         if self._running:
@@ -57,7 +57,7 @@ class Stopwatch:
                 self._runs.append(
                     StopwatchRun(
                         start_time=self._current_run_start,
-                        end_time=datetime.now(),
+                        end_time=datetime.now().astimezone(),
                         duration=elapsed_in_run,
                     )
                 )

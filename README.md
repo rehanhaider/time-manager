@@ -117,6 +117,7 @@ This builds a standalone executable and copies it to `/usr/local/bin/time-manage
 
 | Command                | Description                                       |
 | ---------------------- | ------------------------------------------------- |
+| `make run`             | Run the application                               |
 | `make local`           | Install in editable mode for development          |
 | `make global`          | Build and install system-wide to `/usr/local/bin` |
 | `make build`           | Build standalone executable (with version bump)   |
