@@ -1,3 +1,17 @@
+help:
+	@echo "Usage: make <target>"
+	@echo "Targets:"
+	@echo "  run         Run the application"
+	@echo "  local       Install in editable mode for development"
+	@echo "  global      Build and install system-wide to /usr/local/bin"
+	@echo "  bump        Bump patch version (default)"
+	@echo "  TYPE=MINOR make bump        Bump minor version"
+	@echo "  TYPE=MAJOR make bump        Bump major version"
+	@echo "  clean       Remove build artifacts"
+	@echo "  uninstall   Remove global installation"
+	@echo "  publish [PROD=TRUE]     Publish to PyPI"
+
+
 run:
 	@uv run tm sw
 

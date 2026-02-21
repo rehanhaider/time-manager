@@ -185,10 +185,10 @@ def _root(
 def sw(
     ctx: typer.Context,
     interactive: bool = INTERACTIVE,
-    name: str = typer.Option(
+    project: str = typer.Option(
         "Untitled",
-        "--name",
-        "-n",
+        "--project",
+        "-p",
         help="Project name to include in the summary.",
     ),
 ) -> None:
@@ -204,19 +204,19 @@ def sw(
         interactive or (ctx.obj or {}).get("interactive", False)
     )
     if effective_interactive:
-        stopwatch_tui = StopwatchTui(project_name=name)
+        stopwatch_tui = StopwatchTui(project_name=project)
         try:
             stopwatch_tui.run()
         finally:
             if stopwatch_tui.stopwatch.is_running:
                 stopwatch_tui.stopwatch.stop()
             print_stopwatch_summary(
-                name,
+                project,
                 stopwatch_tui.stopwatch.elapsed,
                 stopwatch_tui.stopwatch.runs,
             )
     else:
-        run_stopwatch_cli(name)
+        run_stopwatch_cli(project)
 
 
 @app.command(help="Start a countdown timer. (alias: countdown)")
