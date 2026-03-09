@@ -30,8 +30,10 @@ class Stopwatch:
     @property
     def elapsed(self) -> float:
         """Return the total elapsed time in seconds."""
-        if self._running:
-            return self._accumulated_time + (monotonic() - self._start_time)
+        if self._running and self._current_run_start:
+            return self._accumulated_time + (
+                datetime.now().astimezone() - self._current_run_start
+            ).total_seconds()
         return self._accumulated_time
 
     @property
@@ -47,7 +49,11 @@ class Stopwatch:
 
     def stop(self):
         if self._running:
-            elapsed_in_run = monotonic() - self._start_time
+            end_time = datetime.now().astimezone()
+            elapsed_in_run = 0.0
+            if self._current_run_start:
+                elapsed_in_run = (end_time - self._current_run_start).total_seconds()
+            
             self._accumulated_time += elapsed_in_run
             self._start_time = None
             self._running = False
@@ -57,7 +63,7 @@ class Stopwatch:
                 self._runs.append(
                     StopwatchRun(
                         start_time=self._current_run_start,
-                        end_time=datetime.now().astimezone(),
+                        end_time=end_time,
                         duration=elapsed_in_run,
                     )
                 )
@@ -72,6 +78,7 @@ class Stopwatch:
         self._accumulated_time = 0.0
         self._start_time = None
         self._current_run_start = None
+        self._runs.clear()
 
     def toggle(self):
         if self._running:

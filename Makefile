@@ -22,9 +22,7 @@ local:
 
 global: build
 	@echo "Installing time-manager system-wide..."
-	@sudo cp dist/time-manager /usr/local/bin/time-manager
-	@sudo ln -sf /usr/local/bin/time-manager /usr/local/bin/tm
-	@echo "Done. You can now run 'time-manager' or 'tm' from anywhere."
+	@uv tool install time-manager
 
 bump:
 	@./scripts/bump.sh
@@ -42,8 +40,7 @@ clean:
 
 uninstall:
 	@echo "Uninstalling time-manager..."
-	-@sudo rm /usr/local/bin/time-manager
-	-@sudo rm /usr/local/bin/tm
+	-@uv tool uninstall time-manager
 	@echo "Done."
 
 publish:
