@@ -976,7 +976,7 @@ wheels = [
 
 [[package]]
 name = "time-manager"
-version = "0.2.26"
+version = "0.3.1"
 source = { editable = "." }
 dependencies = [
     { name = "textual" },

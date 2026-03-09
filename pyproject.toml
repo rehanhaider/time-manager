@@ -1,6 +1,6 @@
 [project]
 name = "time-manager"
-version = "0.2.26"
+version = "0.3.1"
 description = "A terminal based stopwatch and countdown timer"
 readme = "README.md"
 requires-python = ">=3.10"
