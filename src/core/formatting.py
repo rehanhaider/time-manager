@@ -88,16 +88,32 @@ def format_stopwatch_timeline(
     lines.append(f"  Local time: {local_now.strftime('%H:%M:%S')} {tz_name}")
     lines.append("")
 
+    if any(getattr(run, "clock_drift", 0.0) != 0.0 for run in runs):
+        lines.append(
+            "  Note: Your system clock changed during this run. "
+            "Session durations use a monotonic clock; displayed start/end times use wall clock."
+        )
+        lines.append("")
+
     for i, run in enumerate(runs, 1):
         start_str = _to_local(run.start_time).strftime("%H:%M")
         end_str = (
             _to_local(run.end_time).strftime("%H:%M") if run.end_time else "..."
         )
         duration_str = f"({format_duration_words(run.duration)})"
+        drift = getattr(run, "clock_drift", 0.0) or 0.0
+        drift_str = ""
+        if drift != 0.0:
+            sign = "+" if drift >= 0 else "-"
+            abs_s = abs(float(drift))
+            if abs_s < 90:
+                drift_str = f"  Δclock {sign}{int(round(abs_s))}s"
+            else:
+                drift_str = f"  Δclock {sign}{int(round(abs_s / 60))}m"
         
         # Create a simple timeline bar
         bar = "▬" * 15
-        line = f"  Session #{i}\t{start_str} {bar} {end_str}  {duration_str}"
+        line = f"  Session #{i}\t{start_str} {bar} {end_str}  {duration_str}{drift_str}"
         lines.append(line)
         if i < len(runs):
             lines.append("")

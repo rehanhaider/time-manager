@@ -116,6 +116,15 @@ def print_stopwatch_summary(
         Console().print("[dim]No runs recorded.[/dim]")
         return
 
+    def _format_drift_seconds(drift_seconds: float) -> str:
+        sign = "+" if drift_seconds >= 0 else "-"
+        abs_s = abs(float(drift_seconds))
+        # keep this compact; the timeline already shows (hrs/mins) for duration
+        if abs_s < 90:
+            return f"{sign}{int(round(abs_s))}s"
+        abs_m = int(round(abs_s / 60))
+        return f"{sign}{abs_m}m"
+
     # Format total elapsed time
     elapsed_text = format_duration_words(total_elapsed)
 
@@ -130,16 +139,26 @@ def print_stopwatch_summary(
 
     # Build timeline content with breaks
     timeline_lines = []
+    if any(getattr(run, "clock_drift", 0.0) != 0.0 for run in runs):
+        timeline_lines.append(
+            "[yellow]Note:[/yellow] Your system clock changed during this run. "
+            "Session durations use a monotonic clock; displayed start/end times use wall clock."
+        )
+        timeline_lines.append("")
     for i, run in enumerate(runs, 1):
         start_str = _to_local(run.start_time).strftime("%H:%M")
         end_str = _to_local(run.end_time).strftime("%H:%M") if run.end_time else "..."
         duration_str = f"({format_duration_words(run.duration)})"
+        drift = getattr(run, "clock_drift", 0.0) or 0.0
+        drift_str = (
+            f" [yellow]Δclock {_format_drift_seconds(drift)}[/yellow]" if drift != 0.0 else ""
+        )
 
         # Create timeline bar
         bar = "▬" * 15
         line = (
             f"  Session #{i}\t{start_str} [green]{bar}[/green] {end_str} {tz_name}  "
-            f"[dim]{duration_str}[/dim]"
+            f"[dim]{duration_str}[/dim]{drift_str}"
         )
         timeline_lines.append(line)
 
