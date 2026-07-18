@@ -7,7 +7,8 @@ help:
 	@echo "  build              Compile standalone binaries for all platforms"
 	@echo "  package            Assemble npm packages + release artifacts"
 	@echo "  bump               Bump patch version (TYPE=minor|major for others)"
-	@echo "  release            Tag the current version and push (triggers CI release)"
+	@echo "  publish [PROD=TRUE]  Publish locally: default is a rehearsal (npm dry-run"
+	@echo "                     + TestPyPI); PROD=TRUE does npm + PyPI + GitHub release"
 	@echo "  clean              Remove build artifacts"
 
 run:
@@ -31,13 +32,12 @@ bump:
 	@npm version $(TYPE) --no-git-tag-version
 	@echo "Bumped to $$(bun -e 'console.log((await Bun.file("package.json").json()).version)')"
 
-release:
-	@version=$$(bun -e 'console.log((await Bun.file("package.json").json()).version)'); \
-	git tag "v$$version" && git push origin "v$$version" && \
-	echo "Pushed tag v$$version — GitHub Actions will build and publish."
+publish:
+	@echo "Publishing..."
+	@PROD="$(PROD)" ./scripts/publish.sh
 
 clean:
 	@rm -rf dist
 	@echo "Cleaned build artifacts."
 
-.PHONY: help run test typecheck build package bump release clean
+.PHONY: help run test typecheck build package bump publish clean

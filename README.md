@@ -100,9 +100,14 @@ make package                     # assemble npm packages (dist/npm) + release ta
 
 ## Releasing
 
-1. `make bump` (or `TYPE=minor make bump`)
-2. Commit, then `make release` — tags `v<version>` and pushes.
-3. GitHub Actions builds all binaries, creates the GitHub release (curl channel), publishes to npm, and publishes binary wheels to PyPI. Requires the `NPM_TOKEN` and `PYPI_TOKEN` repository secrets.
+Everything publishes locally from this machine — no CI, no secrets on GitHub.
+
+1. `make bump` (or `TYPE=minor make bump`), commit.
+2. `make package` — builds all binaries, npm packages, wheels, and release tarballs.
+3. `make publish` — rehearsal: npm `--dry-run` + TestPyPI.
+4. `PROD=TRUE make publish` — the real thing: npm packages, PyPI wheels, and a GitHub release `v<version>` with the binaries (which the curl installer downloads).
+
+Credentials: npm token in `~/.npmrc`, PyPI tokens in `.env` (`PYPI_PUBLISH_TOKEN`, `TEST_PYPI_PUBLISH_TOKEN`), and an authenticated `gh` CLI for the release upload.
 
 ## History
 
