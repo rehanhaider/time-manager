@@ -1,51 +1,43 @@
 help:
 	@echo "Usage: make <target>"
 	@echo "Targets:"
-	@echo "  run         Run the application"
-	@echo "  local       Install in editable mode for development"
-	@echo "  global      Build and install system-wide to /usr/local/bin"
-	@echo "  bump        Bump patch version (default)"
-	@echo "  TYPE=MINOR make bump        Bump minor version"
-	@echo "  TYPE=MAJOR make bump        Bump major version"
-	@echo "  clean       Remove build artifacts"
-	@echo "  uninstall   Remove global installation"
-	@echo "  publish [PROD=TRUE]     Publish to PyPI"
-
+	@echo "  run                Run the app (stopwatch)"
+	@echo "  test               Run tests"
+	@echo "  typecheck          Typecheck with tsc"
+	@echo "  build              Compile standalone binaries for all platforms"
+	@echo "  package            Assemble npm packages + release artifacts"
+	@echo "  bump               Bump patch version (TYPE=minor|major for others)"
+	@echo "  release            Tag the current version and push (triggers CI release)"
+	@echo "  clean              Remove build artifacts"
 
 run:
-	@uv run tm sw
+	@bun run src/index.ts sw
 
-local:
-	@echo "Installing time-manager (local dev)..."
-	@uv pip install -e .
-	@echo "Done."
+test:
+	@bun test
 
-global: build
-	@echo "Installing time-manager system-wide..."
-	@uv tool install time-manager
+typecheck:
+	@bunx tsc --noEmit
 
+build:
+	@bun run scripts/build.ts
+
+package: build
+	@bun run scripts/package.ts
+	@python3 scripts/build_wheels.py
+
+TYPE ?= patch
 bump:
-	@./scripts/bump.sh
+	@npm version $(TYPE) --no-git-tag-version
+	@echo "Bumped to $$(bun -e 'console.log((await Bun.file("package.json").json()).version)')"
 
-build: bump
-	@echo "Building standalone executable..."
-	@uv run pyinstaller --onefile --name time-manager src/app.py --collect-all textual --hidden-import=tui --hidden-import=tui.stopwatch --hidden-import=tui.countdown --add-data "src/tui/theme.tcss:tui"
-	@echo "Building wheel..."
-	@uv build
-	@echo "Done. Executable is at dist/time-manager and wheel is at dist/time_manager-<version>-py3-none-any.whl"
+release:
+	@version=$$(bun -e 'console.log((await Bun.file("package.json").json()).version)'); \
+	git tag "v$$version" && git push origin "v$$version" && \
+	echo "Pushed tag v$$version — GitHub Actions will build and publish."
 
 clean:
-	@rm -rf build dist *.spec __pycache__
+	@rm -rf dist
 	@echo "Cleaned build artifacts."
 
-uninstall:
-	@echo "Uninstalling time-manager..."
-	-@uv tool uninstall time-manager
-	@echo "Done."
-
-publish:
-	@echo "Publishing to PyPI..."
-	@PROD="$(PROD)" ./scripts/publish.sh
-	@echo "Done. Published to PyPI."
-
-.PHONY: local global build bump clean uninstall publish
+.PHONY: help run test typecheck build package bump release clean

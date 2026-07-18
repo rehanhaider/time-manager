@@ -1,184 +1,113 @@
-# time-manager
+# timeman
 
-A powerful and visually stunning terminal-based timer application built with [Textual](https://textual.textualize.io/) and [Typer](https://typer.tiangolo.com/).
+A terminal based stopwatch and countdown timer, built with [OpenTUI](https://github.com/anomalyco/opentui) and shipped as standalone binaries — no runtime required.
 
-- **CLI Interface (default)**: Lightweight mode (no Textual UI).
-- **TUI Interface**: Beautiful, responsive terminal user interface via `-i/--interactive`.
-- **Notifications**: Visual and audio feedback (bell) when a countdown completes.
+- **CLI interface (default)**: Lightweight inline mode that lives in your scrollback.
+- **TUI interface**: Full-screen terminal UI via `-i/--interactive`.
+- **Notifications**: Bell + toast when a countdown completes.
+- **Session timeline**: Stopwatch summary with per-session start/end times in your local time zone.
+- **Drift-proof timing**: Durations use a monotonic clock, so a system clock jump (DST, NTP sync) never corrupts them.
 
 ![Stopwatch TUI Screenshot](./docs/stopwatch-tui.png)
 
-## Features
-
-- **Stopwatch**: Precise stopwatch with centisecond resolution.
-- **Countdown**: Configurable countdown timer with support for seconds, minutes, and hours.
-
 ## Installation
 
-- Requires **Python 3.10+**
-- Installs two commands: `tm` (recommended) and `time-manager`
+**curl** (Linux, macOS):
 
-From PyPI:
+```bash
+curl -fsSL https://raw.githubusercontent.com/rehanhaider/time-manager/main/install.sh | bash
+```
+
+**npm**:
+
+```bash
+npm install -g timeman
+```
+
+**bun**:
+
+```bash
+bun add -g timeman
+```
+
+**pip / uv** (same binary, published as [time-manager](https://pypi.org/project/time-manager/) for continuity with the original Python package):
 
 ```bash
 pip install time-manager
-```
-
-If you use uv:
-
-```bash
+# or
 uv tool install time-manager
-
-# or (inside a project)
-uv add time-manager
 ```
+
+All methods install the `tm` command, plus `timeman` (npm/bun/curl) or `time-manager` (pip) as an alias.
+
+Supported platforms: Linux x64/arm64 (glibc and musl), macOS x64/arm64, Windows x64 (via npm/bun).
 
 ## Usage
 
-time-manager provides two command names for convenience:
-
-- `tm` - Short and convenient alias
-- `time-manager` - Full command name
-
-Both commands work identically. Examples:
-
 ```bash
-tm sw              # or: time-manager sw   (also: tm stopwatch)
-tm cd 5 m          # or: time-manager cd 5 m (also: tm countdown 5 m)
+tm sw              # stopwatch            (also: tm stopwatch)
+tm cd 5 m          # 5-minute countdown   (also: tm countdown 5 m)
 ```
 
 ### Stopwatch
 
-Start a stopwatch to track elapsed time:
-
 ```bash
 tm sw
-tm sw -n "Project Alpha"
+tm sw -p "Project Alpha"   # name the session for the summary
+tm sw -i                   # full-screen TUI
 ```
 
-For interactive TUI mode:
+Keys: `space` start/stop · `r` reset · `q` quit.
+
+On exit you get a session timeline — one bar per start/stop run, with total time:
+
+```
+╭──────────────── Project Alpha: 0 hrs 25 mins ────────────────╮
+│   Session #1   13:53 ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬ 14:03 IST  (0 hrs 10 mins) │
+│                                                              │
+│   Session #2   14:10 ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬ 14:25 IST  (0 hrs 15 mins) │
+╰──────────────────────────────────────────────────────────────╯
+```
+
+### Countdown
 
 ```bash
-tm sw -i
-tm sw -i -n "Project Alpha"
+tm cd 90 s         # units: s/sec/seconds, m/min/minutes, h/hr/hours
+tm cd 5            # unit defaults to minutes
+tm cd 1 h -i       # full-screen TUI
 ```
 
-**Controls (TUI mode):**
-- `Space`: Start/Stop
-- `r`: Reset
-- `q`: Quit
-
-### Countdown Timer
-
-Start a countdown for a specific duration:
-
-```bash
-tm cd 5 m    # 5 minutes
-tm cd 60 s   # 60 seconds
-tm cd 1 h    # 1 hour
-```
-
-For interactive TUI mode:
-
-```bash
-tm cd 5 m -i
-```
-
-**Controls (TUI mode):**
-- `Space`: Pause/Resume
-- `q`: Quit
+Keys: `space` pause/resume · `q` quit. The display turns yellow under 30 seconds and red under 10; when time is up you get a terminal bell and a toast.
 
 ## Development
 
-### Prerequisites
-
-- [uv](https://github.com/astral-sh/uv) installed on your system.
-- Python 3.10+
-
-### Installation for Development
-
-To install in editable mode for development:
+Requires [Bun](https://bun.sh) >= 1.3.14.
 
 ```bash
-make local
+bun install                      # install dependencies
+bun run dev sw                   # run from source
+bun test                         # tests
+bunx tsc --noEmit                # typecheck
 ```
 
-### Global Installation (Recommended for Testing)
-
-To install as a system-wide utility:
+Building distribution artifacts:
 
 ```bash
-make global
+bun install --os="*" --cpu="*"   # stage native packages for every platform (one-time)
+make build                       # compile binaries for all 7 targets into dist/bin
+make package                     # assemble npm packages (dist/npm) + release tarballs (dist/release)
 ```
 
-This builds a standalone executable and copies it to `/usr/local/bin/time-manager`, and also creates a `/usr/local/bin/tm` symlink.
+## Releasing
 
-### Make Commands
+1. `make bump` (or `TYPE=minor make bump`)
+2. Commit, then `make release` — tags `v<version>` and pushes.
+3. GitHub Actions builds all binaries, creates the GitHub release (curl channel), publishes to npm, and publishes binary wheels to PyPI. Requires the `NPM_TOKEN` and `PYPI_TOKEN` repository secrets.
 
-| Command                | Description                                       |
-| ---------------------- | ------------------------------------------------- |
-| `make run`             | Run the application                               |
-| `make local`           | Install in editable mode for development          |
-| `make global`          | Build and install system-wide to `/usr/local/bin` |
-| `make build`           | Build standalone executable (with version bump)   |
-| `make bump`            | Bump patch version (default)                      |
-| `TYPE=MINOR make bump` | Bump minor version                                |
-| `TYPE=MAJOR make bump` | Bump major version                                |
-| `make clean`           | Remove build artifacts                            |
-| `make uninstall`       | Remove global installation                        |
+## History
 
-### Project Structure
+This project was originally written in Python with Textual and published to PyPI as [time-manager](https://pypi.org/project/time-manager/) (last Python release: 0.3.1; the implementation is preserved in git history). From 0.4.0 on, the PyPI package ships the same compiled binary as the npm package — `pip install time-manager` keeps working with no Python runtime involved.
 
-```
-time-manager/
-├── src/
-│   ├── app.py              # CLI entry point using Typer
-│   ├── cli/
-│   │   ├── __init__.py     # CLI package exports
-│   │   └── cli.py          # CLI implementations for timers
-│   ├── core/
-│   │   ├── formatting.py   # Time formatting utilities
-│   │   └── termclock.py    # Core timer logic
-│   └── tui/
-│       ├── __init__.py     # TUI package exports
-│       ├── countdown.py    # Countdown TUI
-│       ├── stopwatch.py    # Stopwatch TUI
-│       └── theme.tcss      # Textual CSS theme
-├── scripts/
-│   └── bump.sh             # Version bump script
-├── pyproject.toml          # Project configuration
-├── uv.lock                 # Dependency lock file
-├── Makefile                # Build and install commands
-├── LICENSE                 # Project license
-└── README.md               # This file
-```
+## License
 
-### Publishing to PyPI
-
-This repo uses `make publish` (via `scripts/publish.sh`) and defaults to **TestPyPI**.
-
-#### Test PyPI (default)
-
-To publish to Test PyPI (uses `TEST_PYPI_PUBLISH_TOKEN`):
-
-```bash
-make build
-make publish
-```
-
-#### Production PyPI
-
-To publish to production PyPI (uses `PYPI_PUBLISH_TOKEN`):
-
-```bash
-make build
-PROD=TRUE make publish
-```
-
-### Uninstallation
-
-To remove the global installation:
-
-```bash
-make uninstall
-```
+MIT

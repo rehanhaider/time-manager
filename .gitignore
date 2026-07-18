@@ -1,14 +1,12 @@
-# Python-generated files
+# Dependencies and build output
+node_modules/
+dist/
+
+# Local environment
+.env
+.venv
+
+# Legacy Python (safety net)
 __pycache__/
 *.py[oc]
-build/
-dist/
-wheels/
-*.spec
 *.egg-info
-
-# Virtual environments
-.venv
-.env
-
-.ruff_cache/
