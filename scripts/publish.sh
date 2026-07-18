@@ -39,12 +39,12 @@ fi
 # --- npm: platform packages first, then the main package ---
 for dir in dist/npm/*/; do
   name="$(basename "$dir")"
-  [[ "$name" == "timeman" ]] && continue
+  [[ "$name" == "timeman-cli" ]] && continue
   echo "npm publish: $name"
   (cd "$dir" && npm publish --access public $NPM_FLAGS)
 done
-echo "npm publish: timeman"
-(cd dist/npm/timeman && npm publish --access public $NPM_FLAGS)
+echo "npm publish: timeman-cli"
+(cd dist/npm/timeman-cli && npm publish --access public $NPM_FLAGS)
 
 # --- PyPI wheels (tokens from .env, same file as before) ---
 ENV_FILE="$ROOT_DIR/.env"

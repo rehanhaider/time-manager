@@ -22,7 +22,7 @@ export const TARGETS: Target[] = [
   { compile: "bun-linux-arm64-musl", npmPkg: "timeman-linux-arm64-musl", artifact: "tm-linux-arm64-musl", os: "linux", cpu: "arm64", libc: "musl", exe: "tm" },
   { compile: "bun-darwin-x64", npmPkg: "timeman-darwin-x64", artifact: "tm-darwin-x64", os: "darwin", cpu: "x64", exe: "tm" },
   { compile: "bun-darwin-arm64", npmPkg: "timeman-darwin-arm64", artifact: "tm-darwin-arm64", os: "darwin", cpu: "arm64", exe: "tm" },
-  { compile: "bun-windows-x64", npmPkg: "timeman-win32-x64", artifact: "tm-win32-x64", os: "win32", cpu: "x64", exe: "tm.exe" },
+  { compile: "bun-windows-x64", npmPkg: "timeman-windows-x64", artifact: "tm-windows-x64", os: "win32", cpu: "x64", exe: "tm.exe" },
 ]
 
 export async function projectVersion(): Promise<string> {

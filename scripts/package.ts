@@ -63,7 +63,7 @@ for (const target of built) {
 }
 
 // Main package with the launcher shim
-const mainDir = "dist/npm/timeman"
+const mainDir = "dist/npm/timeman-cli"
 await mkdir(`${mainDir}/bin`, { recursive: true })
 
 const optionalDependencies = Object.fromEntries(built.map((t) => [t.npmPkg, version]))
@@ -72,7 +72,7 @@ await Bun.write(
   `${mainDir}/package.json`,
   JSON.stringify(
     {
-      name: "timeman",
+      name: "timeman-cli",
       version,
       description,
       license: "MIT",
@@ -103,7 +103,8 @@ function isMusl() {
 }
 
 const suffix = process.platform === "linux" && isMusl() ? "-musl" : ""
-const pkg = "timeman-" + process.platform + "-" + process.arch + suffix
+const platformName = process.platform === "win32" ? "windows" : process.platform
+const pkg = "timeman-" + platformName + "-" + process.arch + suffix
 const exe = process.platform === "win32" ? "tm.exe" : "tm"
 
 let binPath
@@ -138,5 +139,5 @@ for (const file of ["README.md", "LICENSE"]) {
 // Checksums for the release artifacts
 await $`sh -c 'cd dist/release && sha256sum * > sha256sums.txt'`
 
-console.log(`✓ timeman (main package, ${built.length} platform deps)`)
+console.log(`✓ timeman-cli (main package, ${built.length} platform deps)`)
 console.log(`\nPackaged version ${version}: dist/npm/ + dist/release/`)

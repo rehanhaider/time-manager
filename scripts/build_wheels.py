@@ -30,7 +30,7 @@ TARGETS = {
     "timeman-linux-arm64-musl": ("musllinux_1_2_aarch64", "tm"),
     "timeman-darwin-x64": ("macosx_12_0_x86_64", "tm"),
     "timeman-darwin-arm64": ("macosx_12_0_arm64", "tm"),
-    "timeman-win32-x64": ("win_amd64", "tm.exe"),
+    "timeman-windows-x64": ("win_amd64", "tm.exe"),
 }
 
 UNIX_WRAPPER = '#!/bin/sh\nexec "$(dirname "$0")/tm" "$@"\n'

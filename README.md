@@ -21,13 +21,13 @@ curl -fsSL https://raw.githubusercontent.com/rehanhaider/time-manager/main/insta
 **npm**:
 
 ```bash
-npm install -g timeman
+npm install -g timeman-cli
 ```
 
 **bun**:
 
 ```bash
-bun add -g timeman
+bun add -g timeman-cli
 ```
 
 **pip / uv** (same binary, published as [time-manager](https://pypi.org/project/time-manager/) for continuity with the original Python package):
