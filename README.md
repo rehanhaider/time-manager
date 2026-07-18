@@ -1,5 +1,9 @@
 # timeman
 
+[![npm](https://img.shields.io/npm/v/timeman-cli?label=npm)](https://www.npmjs.com/package/timeman-cli)
+[![PyPI](https://img.shields.io/pypi/v/time-manager?label=pypi)](https://pypi.org/project/time-manager/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+
 A terminal based stopwatch and countdown timer, built with [OpenTUI](https://github.com/anomalyco/opentui) and shipped as standalone binaries — no runtime required.
 
 - **CLI interface (default)**: Lightweight inline mode that lives in your scrollback.
@@ -11,12 +15,6 @@ A terminal based stopwatch and countdown timer, built with [OpenTUI](https://git
 ![Stopwatch TUI Screenshot](./docs/stopwatch-tui.png)
 
 ## Installation
-
-**curl** (Linux, macOS):
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/rehanhaider/time-manager/main/install.sh | bash
-```
 
 **npm**:
 
@@ -38,7 +36,13 @@ pip install time-manager
 uv tool install time-manager
 ```
 
-All methods install the `tm` command, plus `timeman` (npm/bun/curl) or `time-manager` (pip) as an alias.
+**curl** (Linux, macOS — downloads the binary from the latest GitHub release):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/rehanhaider/time-manager/main/install.sh | bash
+```
+
+Every method installs the `tm` command. npm/bun also install `timeman`, pip also installs `time-manager`, and curl installs just `tm`.
 
 Supported platforms: Linux x64/arm64 (glibc and musl), macOS x64/arm64, Windows x64 (via npm/bun).
 
