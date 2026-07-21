@@ -30,7 +30,11 @@ if (selected.length === 0) {
   process.exit(1)
 }
 
-await rm("dist/bin", { recursive: true, force: true })
+// Clear only what we are about to rebuild: a filtered build must leave the
+// other platforms' binaries in place.
+for (const target of selected) {
+  await rm(`dist/bin/${target.npmPkg}`, { recursive: true, force: true })
+}
 
 for (const target of selected) {
   const outfile = `dist/bin/${target.npmPkg}/${target.exe}`
