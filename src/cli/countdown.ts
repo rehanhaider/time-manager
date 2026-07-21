@@ -1,8 +1,18 @@
 import { Countdown } from "../core/termclock.ts"
 import { formatTime } from "../core/formatting.ts"
-import { InlineRegion, ansi, center, drawPanel, style, terminalWidth, withRawInput } from "./ansi.ts"
+import {
+  InlineRegion,
+  ansi,
+  drawPanel,
+  fitText,
+  onTerminalResize,
+  style,
+  terminalWidth,
+  withRawInput,
+} from "./ansi.ts"
 
-const SUBTITLE = "Space: Pause/Resume | q: Quit"
+/** Progressively shorter key hints, widest first. */
+const SUBTITLES = ["Space: Pause/Resume | q: Quit", "space · q", "␣ q"]
 
 /** Lightweight (non-TUI) countdown: a live panel rendered inline in the scrollback. */
 export function runCountdownCli(seconds: number): Promise<void> {
@@ -18,6 +28,7 @@ export function runCountdownCli(seconds: number): Promise<void> {
       if (finished) return
       finished = true
       clearInterval(timer)
+      stopResize()
       restoreInput()
       process.stdout.write(ansi.showCursor)
       resolve()
@@ -31,7 +42,7 @@ export function runCountdownCli(seconds: number): Promise<void> {
       }
     })
 
-    const contentWidth = () => Math.max(4, terminalWidth() - 2) - 4
+    const title = () => fitText(["Countdown", "CD"], terminalWidth() - 6)
 
     const draw = () => {
       countdown.tick()
@@ -42,10 +53,11 @@ export function runCountdownCli(seconds: number): Promise<void> {
         clearInterval(timer)
         process.stdout.write("\x07")
         region.render(
-          drawPanel([center(style("00:00", ansi.bold, ansi.red, ansi.blink), contentWidth())], {
-            title: "Countdown",
-            subtitle: "Time's Up!",
+          drawPanel([style("00:00", ansi.bold, ansi.red, ansi.blink)], {
+            title: title(),
+            subtitle: fitText(["Time's Up!", "Done"], terminalWidth() - 6),
             borderColor: ansi.red,
+            align: "center",
           }),
         )
         setTimeout(finish, 2000)
@@ -61,13 +73,21 @@ export function runCountdownCli(seconds: number): Promise<void> {
       const timeStyle = running ? [ansi.bold, color] : [ansi.dim, color]
 
       region.render(
-        drawPanel([center(style(timeStr, ...timeStyle), contentWidth())], {
-          title: "Countdown",
-          subtitle: SUBTITLE,
+        drawPanel([style(timeStr, ...timeStyle)], {
+          title: title(),
+          subtitle: fitText(SUBTITLES, terminalWidth() - 6),
           borderColor: running ? color : ansi.white,
+          align: "center",
         }),
       )
     }
+
+    // A resize may have reflowed the frame, so drop it and repaint at the new size.
+    const stopResize = onTerminalResize(() => {
+      if (finished) return
+      region.clear()
+      draw()
+    })
 
     draw()
     const timer = setInterval(draw, 100)
