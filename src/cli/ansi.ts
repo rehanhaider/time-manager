@@ -169,37 +169,52 @@ export function drawPanel(lines: string[], opts: PanelOptions = {}): string[] {
   return width < 3 ? rows.map((row) => truncate(row, width)) : rows
 }
 
-/** Repeatedly redraw a block of lines in place (like Rich's Live). */
-export class InlineRegion {
-  private lastHeight = 0
+/**
+ * A live, full-screen frame renderer.
+ *
+ * Drawing happens on the alternate screen buffer, repainted from an absolute
+ * origin (`\x1b[H`) every frame. Cursor-relative redrawing cannot be used here:
+ * terminals that reflow wrapped lines on resize (Windows Terminal, among
+ * others) invalidate any remembered row count, which is what made earlier
+ * frames pile up on screen. Absolute repainting has no such state to
+ * invalidate, so a resize is just the next frame at a new size.
+ *
+ * The user's scrollback is untouched — leaving the alternate buffer restores it
+ * exactly, so the end-of-session summary still prints inline.
+ */
+export class LiveScreen {
+  private active = false
 
-  render(lines: string[]): void {
-    // Clip to the viewport in both axes. A row wider than the terminal wraps and
-    // a region taller than the terminal scrolls; either one breaks the rewind below.
-    const rowWidth = maxRowWidth()
-    const maxRows = Math.max(1, terminalHeight() - 1)
-    const rows = lines.slice(0, maxRows).map((line) => truncate(line, rowWidth))
-
-    const out: string[] = []
-    if (this.lastHeight > 0) out.push(`\x1b[${this.lastHeight}A`)
-    for (const row of rows) out.push(`\r\x1b[2K${row}\n`)
-    if (rows.length < this.lastHeight) {
-      const extra = this.lastHeight - rows.length
-      for (let i = 0; i < extra; i++) out.push("\r\x1b[2K\n")
-      out.push(`\x1b[${extra}A`)
-    }
-    process.stdout.write(out.join(""))
-    this.lastHeight = rows.length
+  start(): void {
+    if (this.active || !process.stdout.isTTY) return
+    this.active = true
+    process.stdout.write(`\x1b[?1049h${ansi.hideCursor}`)
   }
 
-  /**
-   * Erase the current frame and forget it. Used after a resize, where the
-   * terminal may have reflowed the frame and our row count no longer holds.
-   */
-  clear(): void {
-    if (this.lastHeight === 0) return
-    process.stdout.write(`\x1b[${this.lastHeight}A\r\x1b[0J`)
-    this.lastHeight = 0
+  render(lines: string[]): void {
+    if (!this.active) return
+    const width = maxRowWidth()
+    const height = terminalHeight()
+
+    const rows = lines.slice(0, height).map((line) => truncate(line, width))
+    // Vertically centre the frame in the viewport.
+    const top = Math.max(0, Math.floor((height - rows.length) / 2))
+
+    const out: string[] = ["\x1b[H"]
+    for (let i = 0; i < top; i++) out.push("\x1b[K\r\n")
+    rows.forEach((row, index) => {
+      out.push(`${row}\x1b[K`)
+      // Never emit a newline on the final row: that would scroll the buffer.
+      if (top + index < height - 1) out.push("\r\n")
+    })
+    out.push("\x1b[J")
+    process.stdout.write(out.join(""))
+  }
+
+  stop(): void {
+    if (!this.active) return
+    this.active = false
+    process.stdout.write(`${ansi.showCursor}\x1b[?1049l`)
   }
 }
 

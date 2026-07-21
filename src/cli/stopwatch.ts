@@ -1,7 +1,7 @@
 import { Stopwatch } from "../core/termclock.ts"
 import { formatStopwatch } from "../core/formatting.ts"
 import {
-  InlineRegion,
+  LiveScreen,
   ansi,
   drawPanel,
   fitText,
@@ -16,14 +16,17 @@ import { printStopwatchSummary } from "./summary.ts"
 /** Progressively shorter key hints, widest first. */
 const SUBTITLES = ["Space: Start/Stop | r: Reset | q: Quit", "space · r · q", "␣ r q"]
 
-/** Lightweight (non-TUI) stopwatch: a live panel rendered inline in the scrollback. */
+/** Lightweight (non-TUI) stopwatch: a live panel with a summary printed on exit. */
 export function runStopwatchCli(projectName?: string): Promise<void> {
   const project = (projectName ?? "").trim() || "Untitled"
   const stopwatch = new Stopwatch()
   stopwatch.start()
 
-  const region = new InlineRegion()
-  process.stdout.write(ansi.hideCursor)
+  const screen = new LiveScreen()
+  screen.start()
+  // Belt and braces: never strand the terminal on the alternate buffer.
+  const restoreScreen = () => screen.stop()
+  process.on("exit", restoreScreen)
 
   return new Promise((resolve) => {
     let finished = false
@@ -34,7 +37,8 @@ export function runStopwatchCli(projectName?: string): Promise<void> {
       clearInterval(timer)
       stopResize()
       restoreInput()
-      process.stdout.write(ansi.showCursor)
+      screen.stop()
+      process.off("exit", restoreScreen)
       if (stopwatch.isRunning) stopwatch.stop()
       printStopwatchSummary(project, stopwatch.elapsed, stopwatch.runs)
       resolve()
@@ -59,7 +63,7 @@ export function runStopwatchCli(projectName?: string): Promise<void> {
       const lines = [style(timeStr, ...timeStyle)]
       if (terminalHeight() >= 8) lines.push(style("HH:MM:SS", ansi.dim))
 
-      region.render(
+      screen.render(
         drawPanel(lines, {
           title: fitText(["Stopwatch", "SW"], terminalWidth() - 6),
           subtitle: fitText(SUBTITLES, terminalWidth() - 6),
@@ -69,11 +73,9 @@ export function runStopwatchCli(projectName?: string): Promise<void> {
       )
     }
 
-    // A resize may have reflowed the frame, so drop it and repaint at the new size.
+    // Repaint immediately on resize rather than waiting for the next tick.
     const stopResize = onTerminalResize(() => {
-      if (finished) return
-      region.clear()
-      draw()
+      if (!finished) draw()
     })
 
     draw()

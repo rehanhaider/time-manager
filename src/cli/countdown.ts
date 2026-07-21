@@ -1,7 +1,7 @@
 import { Countdown } from "../core/termclock.ts"
 import { formatTime } from "../core/formatting.ts"
 import {
-  InlineRegion,
+  LiveScreen,
   ansi,
   drawPanel,
   fitText,
@@ -18,8 +18,11 @@ const SUBTITLES = ["Space: Pause/Resume | q: Quit", "space · q", "␣ q"]
 export function runCountdownCli(seconds: number): Promise<void> {
   const countdown = new Countdown(seconds)
 
-  const region = new InlineRegion()
-  process.stdout.write(ansi.hideCursor)
+  const screen = new LiveScreen()
+  screen.start()
+  // Belt and braces: never strand the terminal on the alternate buffer.
+  const restoreScreen = () => screen.stop()
+  process.on("exit", restoreScreen)
 
   return new Promise((resolve) => {
     let finished = false
@@ -30,7 +33,8 @@ export function runCountdownCli(seconds: number): Promise<void> {
       clearInterval(timer)
       stopResize()
       restoreInput()
-      process.stdout.write(ansi.showCursor)
+      screen.stop()
+      process.off("exit", restoreScreen)
       resolve()
     }
 
@@ -52,7 +56,7 @@ export function runCountdownCli(seconds: number): Promise<void> {
         // Final "Time's Up" frame: ring the bell, show it briefly, then exit.
         clearInterval(timer)
         process.stdout.write("\x07")
-        region.render(
+        screen.render(
           drawPanel([style("00:00", ansi.bold, ansi.red, ansi.blink)], {
             title: title(),
             subtitle: fitText(["Time's Up!", "Done"], terminalWidth() - 6),
@@ -72,7 +76,7 @@ export function runCountdownCli(seconds: number): Promise<void> {
       const timeStr = formatTime(remaining, { showCentiseconds: false })
       const timeStyle = running ? [ansi.bold, color] : [ansi.dim, color]
 
-      region.render(
+      screen.render(
         drawPanel([style(timeStr, ...timeStyle)], {
           title: title(),
           subtitle: fitText(SUBTITLES, terminalWidth() - 6),
@@ -82,11 +86,9 @@ export function runCountdownCli(seconds: number): Promise<void> {
       )
     }
 
-    // A resize may have reflowed the frame, so drop it and repaint at the new size.
+    // Repaint immediately on resize rather than waiting for the next tick.
     const stopResize = onTerminalResize(() => {
-      if (finished) return
-      region.clear()
-      draw()
+      if (!finished) draw()
     })
 
     draw()
