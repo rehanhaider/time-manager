@@ -110,3 +110,29 @@ export function formatStopwatchTimeline(
 
   return lines.join("\n")
 }
+
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+const MONTHS_SHORT = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+]
+
+/** Whole days from `from` to `to`, both taken at local midnight. */
+function daysBetween(from: Date, to: Date): number {
+  const a = new Date(from.getFullYear(), from.getMonth(), from.getDate())
+  const b = new Date(to.getFullYear(), to.getMonth(), to.getDate())
+  return Math.round((b.getTime() - a.getTime()) / 86_400_000)
+}
+
+/** Recency for the history list: 'today', a weekday inside the last week, else '29 Aug'. */
+export function relativeDayLabel(date: Date, today: Date = new Date()): string {
+  const age = daysBetween(date, today)
+  if (age === 0) return "today"
+  if (age > 0 && age < 7) return WEEKDAYS[date.getDay()]!
+  return `${date.getDate()} ${MONTHS_SHORT[date.getMonth()]}`
+}
+
+/** Day header for the line-item view, e.g. 'Mon 01 Sep'. */
+export function formatDayHeading(date: Date): string {
+  return `${WEEKDAYS[date.getDay()]} ${pad2(date.getDate())} ${MONTHS_SHORT[date.getMonth()]}`
+}
