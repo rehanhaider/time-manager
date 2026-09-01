@@ -10,6 +10,7 @@ A terminal based stopwatch and countdown timer, built with [OpenTUI](https://git
 - **TUI interface**: Full-screen terminal UI via `-i/--interactive`.
 - **Notifications**: Bell + toast when a countdown completes.
 - **Session timeline**: Stopwatch summary with per-session start/end times in your local time zone.
+- **Session history**: Every stopwatch session is saved. Review, delete and retitle them from the TUI with `h`.
 - **Drift-proof timing**: Durations use a monotonic clock, so a system clock jump (DST, NTP sync) never corrupts them.
 
 ![Stopwatch TUI Screenshot](./docs/stopwatch-tui.png)
@@ -61,7 +62,7 @@ tm sw -p "Project Alpha"   # name the session for the summary
 tm sw -i                   # full-screen TUI
 ```
 
-Keys: `space` start/stop · `r` reset · `q` quit.
+Keys: `space` start/stop · `r` reset · `q` quit · `h` history (TUI only).
 
 On exit you get a session timeline — one bar per start/stop run, with total time:
 
@@ -72,6 +73,49 @@ On exit you get a session timeline — one bar per start/stop run, with total ti
 │   Session #2   14:10 ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬ 14:25 IST  (0 hrs 15 mins) │
 ╰──────────────────────────────────────────────────────────────╯
 ```
+
+### Session history
+
+Both modes save every session when you quit. Only the TUI reads them back, so press `h` from `tm sw -i`. There is no `tm log` command.
+
+The first screen rolls your projects up over a billing period, largest first:
+
+```
+       This Week    This Month    Last Month    All Time
+
+             August 2026  ·  11 hrs 52 mins logged
+
+╭────────────────────────────────────────────────────────────────────────╮
+│   PROJECT                SHARE                           TOTAL    LAST │
+│                                                                        │
+│  ▸Project Alpha          ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬    4 hrs 10 mins     Sun │
+│   Client Review          ▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬     4 hrs 5 mins     Mon │
+│   Deep Work              ▬▬▬▬▬▬▬▬▬▬▬▬▬           2 hrs 47 mins     Sat │
+│   Untitled               ▬▬▬▬                    0 hrs 50 mins     Fri │
+╰────────────────────────────────────────────────────────────────────────╯
+```
+
+Keys: `↑↓` project · `←→` period · `enter` line items · `esc` back · `q` quit.
+
+`enter` breaks one project into invoice lines, one per day, with its sessions underneath:
+
+```
+              Client Review  ·  Last Month  ·  4 hrs 5 mins
+
+╭────────────────────────────────────────────────────────────────────────╮
+│   Mon 31 Aug ─────────────────────────────────────────   2 hrs 25 mins │
+│  ▸  13:15 → 15:40                                        2 hrs 25 mins │
+│                                                                        │
+│   Thu 27 Aug ─────────────────────────────────────────    1 hr 40 mins │
+│     10:00 → 11:40                                         1 hr 40 mins │
+╰────────────────────────────────────────────────────────────────────────╯
+```
+
+Keys: `↑↓` session · `d` delete · `r` rename the project · `esc` back · `q` quit.
+
+A row shows the wall-clock span alongside the time actually on the clock. Pause mid-session and the duration comes out shorter than the span. `d` asks for `y`/`n` on the row itself. `r` retitles every session filed under that project, which is how `Untitled` gets fixed after you forget `-p`.
+
+Sessions live in a SQLite database at `~/.local/share/timeman/history.db`, or `~/Library/Application Support/timeman` on macOS and `%LOCALAPPDATA%\timeman` on Windows. `TIMEMAN_HOME` overrides that directory. The newest 5,000 sessions are kept.
 
 ### Countdown
 

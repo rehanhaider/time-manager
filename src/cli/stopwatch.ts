@@ -1,5 +1,6 @@
 import { Stopwatch } from "../core/termclock.ts"
 import { formatStopwatch } from "../core/formatting.ts"
+import { recordSessionQuietly } from "../core/history.ts"
 import {
   LiveScreen,
   ansi,
@@ -40,6 +41,8 @@ export function runStopwatchCli(projectName?: string): Promise<void> {
       screen.stop()
       process.off("exit", restoreScreen)
       if (stopwatch.isRunning) stopwatch.stop()
+      // Recorded here but never read here: history is only readable from the TUI.
+      recordSessionQuietly(project, stopwatch.runs)
       printStopwatchSummary(project, stopwatch.elapsed, stopwatch.runs)
       resolve()
     }

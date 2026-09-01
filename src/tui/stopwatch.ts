@@ -1,22 +1,28 @@
 import { BoxRenderable, TextAttributes, TextRenderable, type KeyEvent } from "@opentui/core"
+import type { Database } from "bun:sqlite"
 import { Stopwatch } from "../core/termclock.ts"
 import { formatStopwatch } from "../core/formatting.ts"
 import { printStopwatchSummary } from "../cli/summary.ts"
+import { openHistory, recordSessionQuietly } from "../core/history.ts"
+import { createHistoryView } from "./history.ts"
 import { Button } from "./button.ts"
-import { createScreen } from "./chrome.ts"
+import { createScreen, type Hint } from "./chrome.ts"
 import { renderDigits } from "./digits.ts"
 import { PALETTE, mix } from "./theme.ts"
+
+const STOPWATCH_HINTS: Hint[] = [
+  ["q", "Quit"],
+  ["space", "Start/Stop"],
+  ["r", "Reset"],
+  ["h", "History"],
+]
 
 /** Full-screen stopwatch TUI (faithful port of the original Textual app). */
 export async function runStopwatchTui(projectName?: string): Promise<void> {
   const project = (projectName ?? "").trim() || "Untitled"
   const stopwatch = new Stopwatch()
 
-  const screen = await createScreen("Stopwatch", [
-    ["q", "Quit"],
-    ["space", "Start/Stop"],
-    ["r", "Reset"],
-  ])
+  const screen = await createScreen("Stopwatch", STOPWATCH_HINTS)
   const { renderer, content } = screen
 
   const card = new BoxRenderable(renderer, {
@@ -132,7 +138,7 @@ export async function runStopwatchTui(projectName?: string): Promise<void> {
 
   // Responsive layout: shed spacing first, then the hint, buttons, and project
   // label as the terminal shrinks (keyboard controls always keep working).
-  screen.onResize((width, height) => {
+  const applyLayout = (width: number, height: number) => {
     card.paddingY = height >= 24 ? 3 : height >= 19 ? 1 : 0
     card.paddingX = width >= 70 ? 10 : width >= 52 ? 4 : 1
     hint.visible = height >= 19
@@ -143,6 +149,42 @@ export async function runStopwatchTui(projectName?: string): Promise<void> {
     for (const button of [startButton, stopButton, resetButton]) {
       button.box.paddingX = buttonPad
     }
+  }
+
+  // History is best effort: a database that will not open must not take the
+  // stopwatch down with it. When it is null, `h` simply does nothing.
+  let db: Database | null = null
+  try {
+    db = openHistory()
+  } catch {
+    db = null
+  }
+
+  const history = db
+    ? createHistoryView(screen, db, () => {
+        // esc at the top of history hands the screen back to the stopwatch.
+        screen.setSubtitle("Stopwatch")
+        screen.setHints(STOPWATCH_HINTS)
+        card.visible = true
+        applyLayout(renderer.terminalWidth, renderer.terminalHeight)
+      })
+    : null
+
+  const showHistory = () => {
+    if (!history) return
+    card.visible = false
+    buttons.visible = false
+    history.layout(renderer.terminalWidth, renderer.terminalHeight)
+    history.open()
+  }
+
+  // History draws over the stopwatch, so only one of them may claim the layout.
+  screen.onResize((width, height) => {
+    if (history?.isOpen) {
+      history.layout(width, height)
+      return
+    }
+    applyLayout(width, height)
   })
 
   const syncState = () => {
@@ -165,19 +207,33 @@ export async function runStopwatchTui(projectName?: string): Promise<void> {
       screen.cleanup()
       renderer.destroy()
       if (stopwatch.isRunning) stopwatch.stop()
+      db?.close()
+      recordSessionQuietly(project, stopwatch.runs)
       printStopwatchSummary(project, stopwatch.elapsed, stopwatch.runs)
       resolve()
     }
 
     renderer.keyInput.on("keypress", (key: KeyEvent) => {
-      if (key.name === "q" || (key.ctrl && key.name === "c")) {
+      if (key.ctrl && key.name === "c") {
         quit()
-      } else if (key.name === "space" || key.sequence === " ") {
+        return
+      }
+      // History consumes keys while it is open, so `r` and `q` can mean something
+      // else there (a rename, or a character being typed into one).
+      if (history?.handleKey(key)) return
+      if (key.name === "q") {
+        quit()
+        return
+      }
+      if (history?.isOpen) return
+      if (key.name === "space" || key.sequence === " ") {
         stopwatch.toggle()
         syncState()
       } else if (key.name === "r") {
         stopwatch.reset()
         syncState()
+      } else if (key.name === "h") {
+        showHistory()
       }
     })
 
