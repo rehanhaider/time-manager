@@ -43,7 +43,7 @@ uv tool install time-manager
 curl -fsSL https://raw.githubusercontent.com/rehanhaider/time-manager/main/install.sh | bash
 ```
 
-Every method installs the `tm` command. npm/bun also install `timeman`, pip also installs `time-manager`, and curl installs just `tm`.
+Every method installs the same two commands, `tm` and its long form `timeman`, pointing at one binary. Package names differ by registry for historical reasons: `timeman-cli` on npm, `time-manager` on PyPI.
 
 Supported platforms: Linux x64/arm64 (glibc and musl), macOS x64/arm64, Windows x64 (via npm/bun).
 
