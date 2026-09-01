@@ -89,14 +89,14 @@ def build_wheel(version: str, bin_dir: str, tag: str, exe: str, out_dir: Path) -
         records = [
             add_file(zf, f"{data_scripts}/{exe}", binary.read_bytes(), executable=True)
         ]
-        # Second command for backwards compatibility with the Python-era package.
+        # Long-form alias. Every channel ships exactly `tm` and `timeman`.
         if exe.endswith(".exe"):
             records.append(
-                add_file(zf, f"{data_scripts}/time-manager.cmd", WINDOWS_WRAPPER.encode(), executable=True)
+                add_file(zf, f"{data_scripts}/timeman.cmd", WINDOWS_WRAPPER.encode(), executable=True)
             )
         else:
             records.append(
-                add_file(zf, f"{data_scripts}/time-manager", UNIX_WRAPPER.encode(), executable=True)
+                add_file(zf, f"{data_scripts}/timeman", UNIX_WRAPPER.encode(), executable=True)
             )
         records.append(add_file(zf, f"{dist_info}/METADATA", metadata, executable=False))
         records.append(add_file(zf, f"{dist_info}/WHEEL", wheel_meta, executable=False))
