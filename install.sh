@@ -56,7 +56,9 @@ tar -xzf "$tmp/$asset" -C "$tmp"
 
 mkdir -p "$INSTALL_DIR"
 install -m 755 "$tmp/tm" "$INSTALL_DIR/tm"
-echo "Installed tm $("$INSTALL_DIR/tm" -V) to $INSTALL_DIR/tm"
+# Relative link, so it follows every future `install` of tm instead of going stale.
+ln -sf tm "$INSTALL_DIR/timeman"
+echo "Installed tm $("$INSTALL_DIR/tm" -V) to $INSTALL_DIR/tm (linked as timeman)"
 
 case ":$PATH:" in
   *":$INSTALL_DIR:"*) ;;
